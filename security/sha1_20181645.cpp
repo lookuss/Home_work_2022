@@ -45,7 +45,7 @@ vector<uint32_t> chunkToWords(string chunk)
 
 void processChunk(int index)
 {
-    vector<uint32_t> words = chunkToWords(m.substr(index * 64, 64));
+    vector<uint32_t> words = chunkToWords(input_message.substr(index * 64, 64));
 
     uint32_t a = h1;
     uint32_t b = h2;
