@@ -1,9 +1,15 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <openssl/rsa.h>
+
 #include <openssl/pem.h>
 #include <openssl/err.h>
+#include <openssl/rsa.h>
+
+#define KEY_LENGTH 2048
+#define PUB_EXP 3
+#define PRINT_KEYS
+#define WRITE_TO_FILE
 
 uint32_t h1 = 0x67452301;
 uint32_t h2 = 0xEFCDAB89;
@@ -100,19 +106,49 @@ void processChunk(int index)
     h5 += e;
 }
 
-int main(int argc, char const *argv[])
+string makePasswordForSha1(string password)
 {
-
-    cout << "Enter the password: ";
-    cin >> input_message;
     padding();
 
     for (int i = 0; i < input_message.size() / 64; i++)
     {
         processChunk(i);
     }
+    string passwordForSha1 = "";
+    uint32_t arr[5] = {h1, h2, h3, h4, h5};
+    char hexString[8];
+    for (int i = 0; i < 5; i++)
+    {
+        sprintf(hexString, "%08x", arr[i]);
+        passwordForSha1 += hexString;
+    }
 
-    cout << hex << h1 << h2 << h3 << h4 << h5 << endl;
+    return passwordForSha1;
+}
 
+void generateRSAkeyPair()
+{
+    cout << "Generating RSA" << KEY_LENGTH << "bits key pair..." << endl;
+    int bits = 2048;
+
+    BIGNUM *bn = BN_new();
+
+    if (BN_set_word(bn, RSA_F4) != 1)
+        throw "BN_set_word fail";
+
+    RSA *rsa = RSA_new();
+
+    if (RSA_generate_key_ex(rsa, bits, bn, NULL) != 1)
+        throw "RSA_generate_key_ex fail";
+}
+
+int main(int argc, char const *argv[])
+{
+
+    cout << "Enter the password: ";
+    cin >> input_message;
+
+    string tmp = makePasswordForSha1(input_message);
+    cout << "Password for SHA1: " << tmp << endl;
     return 0;
 }
